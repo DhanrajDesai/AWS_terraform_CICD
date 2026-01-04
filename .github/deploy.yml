@@ -1,0 +1,45 @@
+name: Terraform CI CD Pipeline for Deploying AWS Resources
+run-name: ${{ github.actor }} has triggered the pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+
+jobs:
+  terraform:
+    name: Terraform Workflow
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+     
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6  
+     
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        working-directory: ./terraform_VPC
+     
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
+        working-directory: ./terraform_VPC
+     
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan
+        working-directory: ./terraform_VPC
+
+      - name: Terraform Apply
+        id: apply
+        run: terraform destroy --auto-approve
+        working-directory: ./terraform_VPC
