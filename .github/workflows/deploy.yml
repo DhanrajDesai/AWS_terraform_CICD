@@ -5,25 +5,37 @@ on:
   push:
     branches:
       - feature
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Choose terraform action"
+        required: true
+        default: "apply"
+        type: choice
+        options:
+          - apply
+          - destroy
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
 
 jobs:
-  build-infra:
+  terraform:
     name: terraform-ci-cd
     runs-on: ubuntu-latest
 
     steps:
-
+  
       - name: Checkout repository
         uses: actions/checkout@v4
 
+     
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.6
 
+   
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -31,10 +43,24 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+   
       - name: Terraform Init
         run: terraform init
 
+
+      - name: Terraform Validate
+        run: terraform validate
+
+ 
+      - name: Terraform Plan
+        run: terraform plan
+
+    
+      - name: Terraform Apply
+        if: github.event.inputs.action == 'apply'
+        run: terraform apply -auto-approve
+
+      # 8️⃣ Terraform Destroy (MANUAL ONLY)
       - name: Terraform Destroy
-        working-directory: ./terraform_VPC
+        if: github.event.inputs.action == 'destroy'
         run: terraform destroy -auto-approve
-        
