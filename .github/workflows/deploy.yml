@@ -35,5 +35,6 @@ jobs:
         run: terraform init
 
       - name: Terraform Destroy
+        working-directory: ./terraform_VPC
         run: terraform destroy -auto-approve
         
